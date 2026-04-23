@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "cosito": {
+      "command": "node",
+      "args": ["/path/to/cosito-mcp/dist/index.js"],
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "DYNAMODB_TABLE": "cosito-inspection-forms",
+        "AWS_ACCESS_KEY_ID": "...",
+        "AWS_SECRET_ACCESS_KEY": "..."
+      }
+    }
+  }
+}

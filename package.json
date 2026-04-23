@@ -1,0 +1,30 @@
+{
+  "name": "cosito-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Cosito quality inspection and inventory data",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "package": "npm run build && zip -r function.zip dist/ node_modules/ package.json"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity": "^3.782.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.782.0",
+    "@aws-sdk/client-dynamodb": "^3.782.0",
+    "@aws-sdk/lib-dynamodb": "^3.782.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "aws-jwt-verify": "^5.1.1",
+    "express": "^4.21.0",
+    "serverless-http": "^3.2.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  }
+}

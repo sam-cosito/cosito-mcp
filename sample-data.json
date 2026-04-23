@@ -1,0 +1,981 @@
+{
+  "form_id": "b2c3d4e5-0002-4000-8000-000000000002",
+  "entity_type": "FORM",
+  "client": "Latin Specialties LLC",
+  "inspection_date": "2026-04-16",
+  "created_at": "2026-04-16T09:56:00Z",
+  "status": "completed",
+  "items": [
+    "Pineapple Crownless",
+    "Green Beans (Ejotes)",
+    "Prickly Pear (Tuna)"
+  ],
+  "sections": [
+    {
+      "name": "Header",
+      "subtitle": "(Receipt General Information)",
+      "rows": [
+        {
+          "field_name": "Inspection date",
+          "input_type": "DATE",
+          "required": true,
+          "answer": "2026-04-16",
+          "notes": "Automatically Capture",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Inspection start time",
+          "input_type": "TIME",
+          "required": true,
+          "answer": "09:56:00",
+          "notes": "Automatically Captures when inspection began.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Inspector name",
+          "input_type": "FREE TEXT",
+          "required": true,
+          "answer": "Cinthya, Rudy",
+          "notes": "Inspector name / Dropdown list?",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Load Number",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "988574",
+          "notes": "Unique identifier to tie this receipt to all PO's within",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Load type",
+          "input_type": "SINGLE OPTION",
+          "required": true,
+          "answer": "Dedicated",
+          "notes": "Captured statistics to identify quality patterns if any",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "PO number(s) Selection",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "0034639",
+          "notes": "Select Open POs",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        }
+      ]
+    },
+    {
+      "name": "Transportation and Truck Condition",
+      "subtitle": "(Record only once per receipt)",
+      "rows": [
+        {
+          "field_name": "Carrier / logistics company",
+          "input_type": "FREE TEXT",
+          "required": true,
+          "answer": "Airline Logistics LLC.",
+          "notes": "Captures Truck owner / Logistics Company",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Documentation check",
+          "input_type": "PASS/FAIL",
+          "required": true,
+          "answer": "Pass",
+          "notes": "Bill of Lading + Customs papers present and matching PO.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Driver ID photo",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/driver_id_988574.jpg",
+          "notes": "Driver info. Capture at gate or dock.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "AWB Documentation (if any)",
+          "input_type": "PHOTO",
+          "required": false,
+          "answer": "photo://captures/awb_988574.jpg",
+          "notes": "Capture at gate or dock.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "License plate photo",
+          "input_type": "PHOTO",
+          "required": false,
+          "answer": "photo://captures/license_plate_988574.jpg",
+          "notes": "Required for fraud prevention and DoD/CTPAT.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        }
+      ]
+    },
+    {
+      "name": "Truck Interior and Exterior",
+      "subtitle": "(Record only once per receipt)",
+      "rows": [
+        {
+          "field_name": "Seal / Security status",
+          "input_type": "SINGLE OPTION",
+          "required": true,
+          "answer": "Intact",
+          "notes": "Record seal number by voice if present.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Reefer / trailer temperature (°F)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "40.9",
+          "notes": "Measured from at least 2 locations w gun/thermometer",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Interior cleanliness (mold, dirt, contamination)",
+          "input_type": "PASS/FAIL",
+          "required": true,
+          "answer": "Pass",
+          "notes": "No debris, mold, or contamination.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Odor check",
+          "input_type": "PASS/FAIL",
+          "required": true,
+          "answer": "Pass",
+          "notes": "No unusual odors. Describe",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Pest check",
+          "input_type": "PASS/FAIL",
+          "required": true,
+          "answer": "Pass",
+          "notes": "No visible insect, pests or rodents. / Describe if fail",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Truck condition comments",
+          "input_type": "SUMMARY OF OBSERVATIONS",
+          "required": false,
+          "answer": "Trailer was clean and odor-free. Seal intact with number 4421-B recorded. Reefer running at set point, temperature verified at two locations.",
+          "notes": "Any additional truck-level observations.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Seal Number / Evidence",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/seal_4421B_988574.jpg",
+          "notes": "Record seal number by voice if present.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Reefer temperature Evidence",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/reefer_temp_988574.jpg",
+          "notes": "Shows reading was taken correctly.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Truck condition comments Evidence",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/truck_interior_988574.jpg",
+          "notes": "Any additional truck-level observations.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        }
+      ]
+    },
+    {
+      "name": "Individual PO Receipt",
+      "subtitle": "(Record once per PO)",
+      "rows": [
+        {
+          "field_name": "Buy from Vendor Name (Shipper)",
+          "input_type": "FREE TEXT",
+          "required": true,
+          "answer": "Dole Fruit Company",
+          "notes": "Auto-populated from Navision / Dynamics 365.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Expected Receipt Date",
+          "input_type": "DATE",
+          "required": true,
+          "answer": "2026-04-16",
+          "notes": "Auto-populated from Navision / Dynamics 365.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Receipt type",
+          "input_type": "SINGLE OPTION",
+          "required": true,
+          "answer": "New PO receipt",
+          "notes": "Links to historical records for root-cause.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "BOL Documentation",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/bol_0034639.jpg",
+          "notes": "Capture at gate or dock.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        }
+      ]
+    },
+    {
+      "name": "Item / SKU Level",
+      "subtitle": "(Repeat as needed per SKU)",
+      "rows": [
+        {
+          "field_name": "Product Description",
+          "input_type": "FREE TEXT",
+          "required": true,
+          "answer": "Pineapple Crownless - 6ct",
+          "notes": "Prepopulated from ERP",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Product Description",
+          "input_type": "FREE TEXT",
+          "required": true,
+          "answer": "Green Beans (Ejotes) - 28lb",
+          "notes": "Prepopulated from ERP",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Product Description",
+          "input_type": "FREE TEXT",
+          "required": true,
+          "answer": "Prickly Pear (Tuna) - 30lb",
+          "notes": "Prepopulated from ERP",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Country of Origin",
+          "input_type": "SINGLE OPTION",
+          "required": true,
+          "answer": "Costa Rica",
+          "notes": "Free text or from a list",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Country of Origin",
+          "input_type": "SINGLE OPTION",
+          "required": true,
+          "answer": "Mexico",
+          "notes": "Free text or from a list",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Country of Origin",
+          "input_type": "SINGLE OPTION",
+          "required": true,
+          "answer": "Mexico",
+          "notes": "Free text or from a list",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Brand",
+          "input_type": "FREE TEXT",
+          "required": false,
+          "answer": "Dole Fresh Fruit Company",
+          "notes": "Free text or prepopulated from ERP",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Brand",
+          "input_type": "FREE TEXT",
+          "required": false,
+          "answer": "Wonder Fields INC",
+          "notes": "Free text or prepopulated from ERP",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Brand",
+          "input_type": "FREE TEXT",
+          "required": false,
+          "answer": "M&M Farms",
+          "notes": "Free text or prepopulated from ERP",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Expected Grade",
+          "input_type": "SINGLE OPTION",
+          "required": false,
+          "answer": "USDA #1",
+          "notes": "Choose from dropdown / or prepopulate from ERP",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Expected Quantity",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "800",
+          "notes": "Prepopulated from ERP",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Expected Quantity",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "350",
+          "notes": "Prepopulated from ERP",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Expected Quantity",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "200",
+          "notes": "Prepopulated from ERP",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Expected Case Net Weight",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "30",
+          "notes": "Prepopulated from ERP / receiver observation",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Expected Case Net Weight",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "28",
+          "notes": "Prepopulated from ERP / receiver observation",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Expected Case Net Weight",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "30",
+          "notes": "Prepopulated from ERP / receiver observation",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        }
+      ]
+    },
+    {
+      "name": "1.- Quantity and Weight Inspection",
+      "subtitle": "(Repeat as needed per SKU)",
+      "rows": [
+        {
+          "field_name": "Case Weight check (net)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "28",
+          "notes": "Spot weight vs. (expected) declared weight on label.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Case Weight check (net)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "27.5",
+          "notes": "Spot weight vs. (expected) declared weight on label.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Case Weight check (net)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "29.8",
+          "notes": "Spot weight vs. (expected) declared weight on label.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Pallet Weight check (net)",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "2240",
+          "notes": "Spot weight vs. Expected weight check",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Pallet Weight check (net)",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "980",
+          "notes": "Spot weight vs. Expected weight check",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Pallet Weight check (net)",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "1490",
+          "notes": "Spot weight vs. Expected weight check",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Pallet Received",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "10",
+          "notes": "Capture pallet number or plate by pallet (sequential)",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Pallet Received",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "5",
+          "notes": "Capture pallet number or plate by pallet (sequential)",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Pallet Received",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "4",
+          "notes": "Capture pallet number or plate by pallet (sequential)",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Cases per pallet",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "80",
+          "notes": "Receiver Observation or Prepopulated from ERP",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Cases per pallet",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "70",
+          "notes": "Receiver Observation or Prepopulated from ERP",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Cases per pallet",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "50",
+          "notes": "Receiver Observation or Prepopulated from ERP",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Total Pallets Received",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "10",
+          "notes": "Add all pallets received (account for short pallets)",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Total Pallets Received",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "5",
+          "notes": "Add all pallets received (account for short pallets)",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Total Pallets Received",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "4",
+          "notes": "Add all pallets received (account for short pallets)",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Quantity comments",
+          "input_type": "SUMMARY OF OBSERVATIONS",
+          "required": false,
+          "answer": "Pineapple received complete. Green Beans 1 case short on pallet 3. Prickly Pear count matches PO.",
+          "notes": "Note if Short / Over, etc..",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Case Weight variance",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "-2",
+          "notes": "Auto: Observed minus Expected. Negative = short.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Case Weight variance",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "-0.5",
+          "notes": "Auto: Observed minus Expected. Negative = short.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Case Weight variance",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "-0.2",
+          "notes": "Auto: Observed minus Expected. Negative = short.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Total Quantity Received",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "800",
+          "notes": "",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Total Quantity Received",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "349",
+          "notes": "",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Total Quantity Received",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "200",
+          "notes": "",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Quantity variance",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "0",
+          "notes": "Auto: Observed minus Expected. Negative = short.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Quantity variance",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "-1",
+          "notes": "Auto: Observed minus Expected. Negative = short.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Quantity variance",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "0",
+          "notes": "Auto: Observed minus Expected. Negative = short.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        }
+      ]
+    },
+    {
+      "name": "2.- Packaging Inspection",
+      "subtitle": "(Repeat as needed per SKU)",
+      "rows": [
+        {
+          "field_name": "Packaging integrity/ Cleanliness",
+          "input_type": "PASS/FAIL",
+          "required": true,
+          "answer": "Pass",
+          "notes": "No dents, tears, punctures, smears, or signs of resealing.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Labeling check",
+          "input_type": "PASS/FAIL",
+          "required": true,
+          "answer": "Pass",
+          "notes": "Product name, lot/batch code, expiry, allergens, origin.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Pack date (from label)",
+          "input_type": "DATE",
+          "required": false,
+          "answer": "2026-04-02",
+          "notes": "Date printed on box label. Required for shelf-life tracking.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Pack date (from label)",
+          "input_type": "DATE",
+          "required": false,
+          "answer": "2026-04-14",
+          "notes": "Date printed on box label. Required for shelf-life tracking.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Pack date (from label)",
+          "input_type": "DATE",
+          "required": false,
+          "answer": "2026-04-10",
+          "notes": "Date printed on box label. Required for shelf-life tracking.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Packaging comments",
+          "input_type": "SUMMARY OF OBSERVATIONS",
+          "required": false,
+          "answer": "All boxes in good condition. Two boxes on pallet 7 had minor corner dents, not affecting product integrity. Labels legible and complete on all SKUs.",
+          "notes": "Any findings not covered by pass/fail checks.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Packaging photo",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/packaging_pineapple_988574.jpg",
+          "notes": "Shows condition of packaging at time of receipt.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Packaging photo",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/packaging_greenbeans_988574.jpg",
+          "notes": "Shows condition of packaging at time of receipt.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Packaging photo",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/packaging_tuna_988574.jpg",
+          "notes": "Shows condition of packaging at time of receipt.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "PTI Label",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/pti_pineapple_988574.jpg",
+          "notes": "Required for perishable traceability and recall documentation.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "PTI Label",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/pti_greenbeans_988574.jpg",
+          "notes": "Required for perishable traceability and recall documentation.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "PTI Label",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/pti_tuna_988574.jpg",
+          "notes": "Required for perishable traceability and recall documentation.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        }
+      ]
+    },
+    {
+      "name": "3.- Receiving Quality Assessment",
+      "subtitle": "(Repeat as needed per SKU)",
+      "rows": [
+        {
+          "field_name": "Temperature (°F)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "46.8",
+          "notes": "USDA: acceptable ≤55°F. >55°F = concern. Reading: 46.8°F.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Temperature (°F)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "38.2",
+          "notes": "USDA: acceptable ≤55°F. >55°F = concern.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Temperature (°F)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "44.1",
+          "notes": "USDA: acceptable ≤55°F. >55°F = concern.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Brix (sugar content, °)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "12",
+          "notes": "Target: ≥11.0° <16",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Brix (sugar content, °)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "13.5",
+          "notes": "Target: ≥11.0° <16",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Pressure / firmness (lb/in²)",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "14.3",
+          "notes": "Use penetrometer on sample units. Too soft = overripe.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Cases inspected",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "14",
+          "notes": "USDA algorithm for 10 pallets = inspect ~14 cases.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Cases inspected",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "8",
+          "notes": "USDA algorithm for 5 pallets = inspect ~8 cases.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Cases inspected",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "7",
+          "notes": "USDA algorithm for 4 pallets = inspect ~7 cases.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Units inspected",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "84",
+          "notes": "Calculated: Cases inspected × pieces per case.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Units inspected",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "240",
+          "notes": "Calculated: Cases inspected × pieces per case.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Units inspected",
+          "input_type": "NUMBER",
+          "required": true,
+          "answer": "70",
+          "notes": "Calculated: Cases inspected × pieces per case.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Temperature photo",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/temp_pineapple_988574.jpg",
+          "notes": "Shows thermometer correctly placed — required evidence.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Temperature photo",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/temp_greenbeans_988574.jpg",
+          "notes": "Shows thermometer correctly placed — required evidence.",
+          "applies_to": ["Green Beans (Ejotes)"]
+        },
+        {
+          "field_name": "Temperature photo",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/temp_tuna_988574.jpg",
+          "notes": "Shows thermometer correctly placed — required evidence.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Brix photo",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/brix_pineapple_988574.jpg",
+          "notes": "Capture refractometer showing reading.",
+          "applies_to": ["Pineapple Crownless"]
+        },
+        {
+          "field_name": "Brix photo",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/brix_tuna_988574.jpg",
+          "notes": "Capture refractometer showing reading.",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Pressure photo",
+          "input_type": "PHOTO",
+          "required": false,
+          "answer": "photo://captures/pressure_tuna_988574.jpg",
+          "notes": "",
+          "applies_to": ["Prickly Pear (Tuna)"]
+        }
+      ]
+    },
+    {
+      "name": "4.- Internal/ External Defects",
+      "subtitle": "(Repeat as needed per SKU)",
+      "rows": [
+        {
+          "field_name": "Mechanical damage count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "4",
+          "notes": "Threshold: ≤5% total. Reading: 4 units (2.9%).",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Cracks count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Splits count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Bruising count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "9",
+          "notes": "Very common in transit. Reading: 9 units (6.4%).",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Blistering count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Pitting count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Shriveling count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "Better shown by video — squeeze fruit lightly while recording.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Insect damage count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "Any insect damage = automatic hold.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Decay count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "8",
+          "notes": "Any decay = concern. >3% = hold. Reading: 8 units (5.7%).",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Mold count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "Any mold = automatic hold.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Rusting count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Water damage count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Scarring count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "External appearance defect.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Color issue count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "2",
+          "notes": "Non-uniform ripening critical for fresh-cut.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Size issue count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Stem / tip issue count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "3",
+          "notes": "Crown removed = crownless — stem end condition.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Other defect count",
+          "input_type": "NUMBER",
+          "required": false,
+          "answer": "0",
+          "notes": "Describe in comments.",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Total defect percentage (Check Sum)",
+          "input_type": "CALCULATION",
+          "required": true,
+          "answer": "0.25",
+          "notes": "Sum: This is a percentage, usually pass <10%",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        },
+        {
+          "field_name": "Defect photos",
+          "input_type": "PHOTO",
+          "required": true,
+          "answer": "photo://captures/defects_988574.jpg",
+          "notes": "",
+          "applies_to": ["Pineapple Crownless", "Green Beans (Ejotes)", "Prickly Pear (Tuna)"]
+        }
+      ]
+    }
+  ]
+}
