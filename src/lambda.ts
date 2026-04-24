@@ -113,15 +113,10 @@ export const handler = async (event: FnUrlEvent): Promise<LambdaResult> => {
 
   // Authorization — relay to Cognito, encoding Claude's redirect_uri + state
   if (path === "/authorize" && method === "GET") {
-    const clientId = params.get("client_id");
     const claudeRedirectUri = params.get("redirect_uri") ?? "";
     const claudeState = params.get("state") ?? "";
     const codeChallenge = params.get("code_challenge") ?? "";
     const codeChallengeMethod = params.get("code_challenge_method") ?? "S256";
-
-    if (clientId !== COGNITO_CLIENT_ID) {
-      return json(400, { error: "invalid_client", error_description: "Unknown client_id" });
-    }
 
     const relayState = Buffer.from(JSON.stringify({ uri: claudeRedirectUri, st: claudeState })).toString("base64url");
     const ourCallback = `${SERVER_URL}/callback`;
@@ -241,8 +236,6 @@ export const handler = async (event: FnUrlEvent): Promise<LambdaResult> => {
       };
     }
 
-    // Build a Web Standard Request directly — avoids the @hono/node-server
-    // adapter that breaks on our Lambda event (missing rawHeaders).
     const host = event.headers?.["host"] ?? "localhost";
     const qs = event.rawQueryString ? `?${event.rawQueryString}` : "";
     const url = `https://${host}${path}${qs}`;
