@@ -74,6 +74,7 @@ export const handler = async (event) => {
         return json(201, {
             client_id: COGNITO_CLIENT_ID,
             client_name: "Cosito MCP",
+            logo_uri: "https://www.cosito.ai/logo.png",
             redirect_uris: [
                 "https://claude.ai/api/mcp/auth_callback",
                 "https://claude.com/api/mcp/auth_callback",
