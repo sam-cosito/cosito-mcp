@@ -1,4 +1,4 @@
-const data = [
+export const data = [
   {
     "form_id": "6dc10f42-8b00-423b-a4b1-318162cf3de3",
     "entity_type": "FORM",
