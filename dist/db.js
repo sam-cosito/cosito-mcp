@@ -1,55 +1,157 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import { getFormById, listForms, getQualityMetrics, listClients, toFormSummary, } from "./db.js";
-export function createMcpServer() {
-    const server = new McpServer({ name: "cosito-mcp", version: "1.0.0" });
-    server.tool("get_form", "Retrieve a single quality inspection form by its unique form_id. Returns the complete record: form metadata, truck_inspection, packaging_inspection, quantity, quality_assessment (with defects and AI comments), and qa_authorization.", { form_id: z.string().describe("Unique ID of the inspection form") }, async ({ form_id }) => {
-        const form = await getFormById(form_id);
-        if (!form) {
-            return {
-                content: [{ type: "text", text: `No form found with ID '${form_id}'.` }],
-                isError: true,
-            };
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, QueryCommand, ScanCommand, } from "@aws-sdk/lib-dynamodb";
+import { getAwsCredentials } from "./auth.js";
+const TABLE_NAME = process.env.DYNAMODB_TABLE || "cosito-inspection-forms";
+const REGION = process.env.AWS_REGION || "us-east-1";
+async function getDocClient() {
+    const credentials = await getAwsCredentials();
+    const dynamo = new DynamoDBClient({ region: REGION, credentials });
+    return DynamoDBDocumentClient.from(dynamo, {
+        marshallOptions: { removeUndefinedValues: true },
+    });
+}
+async function paginateQuery(docClient, params, maxItems) {
+    const items = [];
+    let lastKey;
+    do {
+        const response = await docClient.send(new QueryCommand({ ...params, ExclusiveStartKey: lastKey }));
+        items.push(...(response.Items ?? []));
+        lastKey = response.LastEvaluatedKey;
+    } while (lastKey && items.length < maxItems);
+    return items.slice(0, maxItems);
+}
+async function paginateScan(docClient, params, maxItems) {
+    const items = [];
+    let lastKey;
+    do {
+        const response = await docClient.send(new ScanCommand({ ...params, ExclusiveStartKey: lastKey }));
+        items.push(...(response.Items ?? []));
+        lastKey = response.LastEvaluatedKey;
+    } while (lastKey && items.length < maxItems);
+    return items.slice(0, maxItems);
+}
+export async function getFormById(formId) {
+    const docClient = await getDocClient();
+    const response = await docClient.send(new GetCommand({ TableName: TABLE_NAME, Key: { form_id: formId } }));
+    return response.Item ?? null;
+}
+export async function listForms(filters) {
+    const docClient = await getDocClient();
+    const { client, item, date_from, date_to, po_number, inspection_status, origin, limit = 50 } = filters;
+    const fetchLimit = (item || po_number || inspection_status || origin) ? limit * 5 : limit;
+    let raw;
+    if (client) {
+        const params = {
+            TableName: TABLE_NAME,
+            IndexName: "ClientDateIndex",
+            KeyConditionExpression: "client = :client",
+            ExpressionAttributeValues: { ":client": client },
+        };
+        if (date_from && date_to) {
+            params.KeyConditionExpression += " AND inspection_date BETWEEN :from AND :to";
+            params.ExpressionAttributeValues[":from"] = date_from;
+            params.ExpressionAttributeValues[":to"] = date_to;
         }
-        return { content: [{ type: "text", text: JSON.stringify(form, null, 2) }] };
-    });
-    server.tool("list_forms", "List inspection forms with optional filters. Default response returns summaries with: form_id, client, inspection_date, inspection_time, po_number, inspector_name, product_name, items, origin, inspection_status. Pass include_full_data=true for the complete record including truck_inspection, packaging_inspection, quantity, quality_assessment, and qa_authorization. Use this to count receiving events, list POs, find forms by client/product/date/origin/inspection outcome, or browse results.", {
-        client: z.string().optional().describe("Filter by client name — exact match (use list_clients to get valid names, e.g. 'Dole Fresh Fruit Company')"),
-        item: z.string().optional().describe("Filter by product name — partial match (e.g. 'Pineapple')"),
-        po_number: z.string().optional().describe("Filter by PO number — partial match (e.g. 'PO0034638')"),
-        inspection_status: z.string().optional().describe("Filter by inspection outcome — exact match: 'Accept', 'Reject', or 'Further Review'"),
-        origin: z.string().optional().describe("Filter by country of origin — partial match (e.g. 'Colombia', 'Mexico', 'Costa Rica')"),
-        date_from: z.string().optional().describe("Earliest inspection date, inclusive (YYYY-MM-DD)"),
-        date_to: z.string().optional().describe("Latest inspection date, inclusive (YYYY-MM-DD)"),
-        limit: z.number().int().min(1).max(500).optional().default(50).describe("Maximum number of forms to return (default 50, max 500)"),
-        include_full_data: z.boolean().optional().default(false).describe("Return full nested records instead of summaries. Default false."),
-    }, async ({ client, item, po_number, inspection_status, origin, date_from, date_to, limit, include_full_data }) => {
-        const forms = await listForms({ client, item, po_number, inspection_status, origin, date_from, date_to, limit });
-        const output = include_full_data ? forms : forms.map(toFormSummary);
-        return {
-            content: [{ type: "text", text: JSON.stringify({ count: output.length, forms: output }, null, 2) }],
+        else if (date_from) {
+            params.KeyConditionExpression += " AND inspection_date >= :from";
+            params.ExpressionAttributeValues[":from"] = date_from;
+        }
+        else if (date_to) {
+            params.KeyConditionExpression += " AND inspection_date <= :to";
+            params.ExpressionAttributeValues[":to"] = date_to;
+        }
+        raw = await paginateQuery(docClient, params, fetchLimit);
+    }
+    else if (date_from || date_to) {
+        const params = {
+            TableName: TABLE_NAME,
+            IndexName: "DateIndex",
+            KeyConditionExpression: "entity_type = :et",
+            ExpressionAttributeValues: { ":et": "FORM" },
         };
-    });
-    server.tool("get_quality_metrics", "Return quality assessment data across many forms for trend analysis and KPIs. Each result includes: form_id, client, inspection_date, po_number, product_name, origin, inspection_status, brix, product_temperature_f, pressure, defect_total_percentage, defects (breakdown by type), and ai_generated_comments. Use this for questions like 'average brix by month', 'rejection rate by origin', 'defect trends over Q1', or 'which POs had the highest decay'.", {
-        client: z.string().optional().describe("Filter by client name — exact match (e.g. 'Dole Fresh Fruit Company')"),
-        item: z.string().optional().describe("Filter by product name — partial match (e.g. 'Pineapple')"),
-        inspection_status: z.string().optional().describe("Filter by outcome — exact match: 'Accept', 'Reject', or 'Further Review'"),
-        origin: z.string().optional().describe("Filter by country of origin — partial match (e.g. 'Colombia', 'Mexico', 'Costa Rica')"),
-        date_from: z.string().optional().describe("Earliest inspection date, inclusive (YYYY-MM-DD)"),
-        date_to: z.string().optional().describe("Latest inspection date, inclusive (YYYY-MM-DD)"),
-        limit: z.number().int().min(1).max(2000).optional().default(500).describe("Maximum number of forms to scan (default 500)"),
-    }, async ({ client, item, inspection_status, origin, date_from, date_to, limit }) => {
-        const results = await getQualityMetrics({ client, item, inspection_status, origin, date_from, date_to, limit });
-        return {
-            content: [{ type: "text", text: JSON.stringify({ count: results.length, results }, null, 2) }],
-        };
-    });
-    server.tool("list_clients", "Return a sorted list of all unique client names in the database. Use this before filtering by client to get the exact name required by list_forms and get_quality_metrics.", {}, async () => {
-        const clients = await listClients();
-        return {
-            content: [{ type: "text", text: JSON.stringify({ count: clients.length, clients }, null, 2) }],
-        };
-    });
-    return server;
+        if (date_from && date_to) {
+            params.KeyConditionExpression += " AND inspection_date BETWEEN :from AND :to";
+            params.ExpressionAttributeValues[":from"] = date_from;
+            params.ExpressionAttributeValues[":to"] = date_to;
+        }
+        else if (date_from) {
+            params.KeyConditionExpression += " AND inspection_date >= :from";
+            params.ExpressionAttributeValues[":from"] = date_from;
+        }
+        else if (date_to) {
+            params.KeyConditionExpression += " AND inspection_date <= :to";
+            params.ExpressionAttributeValues[":to"] = date_to;
+        }
+        raw = await paginateQuery(docClient, params, fetchLimit);
+    }
+    else {
+        raw = await paginateScan(docClient, {
+            TableName: TABLE_NAME,
+            FilterExpression: "entity_type = :et",
+            ExpressionAttributeValues: { ":et": "FORM" },
+        }, fetchLimit);
+    }
+    let forms = raw;
+    if (item) {
+        const needle = item.toLowerCase();
+        forms = forms.filter((f) => f.items?.some((i) => i.toLowerCase().includes(needle)) ||
+            f.product_name?.toLowerCase().includes(needle));
+    }
+    if (po_number) {
+        const needle = po_number.toLowerCase();
+        forms = forms.filter((f) => f.po_number?.toLowerCase().includes(needle));
+    }
+    if (inspection_status) {
+        const needle = inspection_status.toLowerCase();
+        forms = forms.filter((f) => f.quality_assessment?.inspection_status?.toLowerCase() === needle);
+    }
+    if (origin) {
+        const needle = origin.toLowerCase();
+        forms = forms.filter((f) => f.origin?.toLowerCase().includes(needle));
+    }
+    return forms.slice(0, limit);
+}
+export async function getQualityMetrics(filters) {
+    const forms = await listForms({ ...filters, limit: filters.limit ?? 500 });
+    return forms.map((f) => ({
+        form_id: f.form_id,
+        client: f.client,
+        inspection_date: f.inspection_date,
+        po_number: f.po_number,
+        product_name: f.product_name,
+        origin: f.origin,
+        inspection_status: f.quality_assessment?.inspection_status,
+        brix: f.quality_assessment?.brix,
+        product_temperature_f: f.quality_assessment?.product_temperature_f,
+        pressure: f.quality_assessment?.pressure,
+        defect_total_percentage: f.quality_assessment?.defect_total_percentage,
+        defects: f.quality_assessment?.defects,
+        ai_generated_comments: f.quality_assessment?.ai_generated_comments,
+    }));
+}
+export async function listClients() {
+    const docClient = await getDocClient();
+    const raw = await paginateScan(docClient, {
+        TableName: TABLE_NAME,
+        FilterExpression: "entity_type = :et",
+        ExpressionAttributeValues: { ":et": "FORM" },
+        ProjectionExpression: "client",
+    }, 10000);
+    const unique = [...new Set(raw.map((r) => r["client"]).filter(Boolean))];
+    return unique.sort();
+}
+export function toFormSummary(form) {
+    return {
+        form_id: form.form_id,
+        client: form.client,
+        inspection_date: form.inspection_date,
+        inspection_time: form.inspection_time,
+        po_number: form.po_number,
+        inspector_name: form.inspector_name,
+        product_name: form.product_name,
+        items: form.items,
+        origin: form.origin,
+        inspection_status: form.quality_assessment?.inspection_status,
+    };
 }
 //# sourceMappingURL=db.js.map
