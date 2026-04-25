@@ -11,8 +11,6 @@ import {
 export function createMcpServer(): McpServer {
   const server = new McpServer({ name: "cosito-mcp", version: "1.0.0" });
 
-  // ── Tools ──────────────────────────────────────────────────────────────────
-
   server.tool(
     "get_form",
     "Retrieve a single quality inspection form by its unique form_id. Returns the complete record: form metadata, truck_inspection, packaging_inspection, quantity, quality_assessment (with defects and AI comments), and qa_authorization.",
@@ -86,6 +84,14 @@ export function createMcpServer(): McpServer {
 
   // ── Prompts ────────────────────────────────────────────────────────────────
 
+  const GROUND_RULES = `## Ground rules (always apply)
+- ALWAYS call the relevant tool fresh for every question. Never answer from memory, prior tool results, or anything retrieved earlier in the conversation.
+- NEVER estimate, infer, or extrapolate values. Every number, status, and field you state must come directly from the current tool response.
+- Cite every claim. After each value you state, note the field it came from in parentheses, e.g. "1.39% (defect_total_percentage)" or "Rejected (inspection_status)".
+- If the tool returns no results, say so explicitly. Do not fill gaps with assumptions.
+- Counts must be derived by counting the actual returned array — never guess or recall a count.
+- If a follow-up question refers to a PO or record mentioned earlier, re-query the database for it rather than reusing cached data.`;
+
   server.prompt(
     "field-guide",
     "Maps everyday language to the correct Cosito field names and tools so queries always resolve correctly",
@@ -95,6 +101,8 @@ export function createMcpServer(): McpServer {
         content: {
           type: "text",
           text: `# Cosito Field & Tool Reference
+
+${GROUND_RULES}
 
 ## Field name aliases
 | What the user says | Field to use | Tool parameter |
@@ -113,14 +121,14 @@ export function createMcpServer(): McpServer {
 ## Which tool to use
 - **Counting shipments / listing POs / finding forms** → list_forms
 - **Quality analysis, KPIs, averages, trends, defect breakdown** → get_quality_metrics
-- **Full details on one specific shipment** → get_form (requires form_id)
+- **Full details on one specific shipment** → get_form (requires form_id from list_forms first)
 - **Filtering by client** → always call list_clients first to get the exact name
 
-## Important rules
-- client filter is EXACT match — 'Dole' will return nothing; use 'Dole Fresh Fruit Company'
-- For "how many" questions, set limit=500 and count the returned results
-- po_number, item, and origin are partial/case-insensitive — passing 'Colombia' will match 'Colombia'
-- inspection_status must be exactly 'Accept', 'Reject', or 'Further Review'`,
+## Filter behavior
+- client: EXACT match — 'Dole' returns nothing; must be 'Dole Fresh Fruit Company'
+- po_number, item, origin: partial, case-insensitive
+- inspection_status: exactly 'Accept', 'Reject', or 'Further Review'
+- For counts: always set limit=500 and count the returned array`,
         },
       }],
     })
@@ -130,7 +138,7 @@ export function createMcpServer(): McpServer {
     "rejection-analysis",
     "Guides a full rejection rate and defect breakdown analysis across any filter combination",
     {
-      period: z.string().optional().describe("Time period to analyze, e.g. 'Q1 2026', 'March 2026', 'last 30 days'"),
+      period: z.string().optional().describe("Time period to analyze, e.g. 'Q1 2026', 'March 2026'"),
       filter: z.string().optional().describe("Optional focus, e.g. 'Colombia', 'Pineapple', 'Dole'"),
     },
     ({ period, filter }) => ({
@@ -140,19 +148,21 @@ export function createMcpServer(): McpServer {
           type: "text",
           text: `Perform a rejection and defect analysis${period ? ` for ${period}` : ""}${filter ? ` filtered to ${filter}` : ""}.
 
-Steps:
-1. Call get_quality_metrics with appropriate date_from/date_to${filter ? " and relevant filter (origin/item/client)" : ""} and limit=500
-2. Calculate:
-   - Total shipments
-   - Acceptance rate (Accept / total)
-   - Rejection rate (Reject / total)
-   - Further Review rate
-   - Average defect_total_percentage across all forms
-   - Top 3 defect types by frequency (count how many forms had a non-null, non-zero value for each defect field)
-   - Average brix (skip nulls)
-3. Break down rejection rate by origin country
-4. List the POs that were rejected with their defect percentages and AI comments
-5. Summarize findings and flag any patterns worth attention`,
+${GROUND_RULES}
+
+## Steps
+1. Call get_quality_metrics fresh with appropriate date_from/date_to${filter ? " and relevant filter (origin/item/client)" : ""} and limit=500. Do not reuse any prior tool result.
+2. From the raw response, calculate and cite each figure:
+   - Total shipments (count of returned array)
+   - Acceptance rate: count where inspection_status='Accept' ÷ total
+   - Rejection rate: count where inspection_status='Reject' ÷ total
+   - Further Review rate: count where inspection_status='Further Review' ÷ total
+   - Average defect_total_percentage (skip nulls, cite field name)
+   - Top defect types: for each defect field, count records where value > 0; rank by frequency
+   - Average brix (skip nulls, cite field name)
+3. Break down rejection rate by origin — count per country from the raw data
+4. List every rejected PO with: po_number, defect_total_percentage, top defect fields (non-null/non-zero), ai_generated_comments
+5. Summarize findings — flag patterns only if directly supported by the data above`,
         },
       }],
     })
@@ -172,29 +182,36 @@ Steps:
           type: "text",
           text: `Generate a receiving report from ${date_from} to ${date_to}.
 
-Steps:
-1. Call list_forms(date_from="${date_from}", date_to="${date_to}", limit=500) to get all shipments in range
-2. Call get_quality_metrics(date_from="${date_from}", date_to="${date_to}", limit=500) for quality data
-3. Produce a report with these sections:
+${GROUND_RULES}
+
+## Steps
+1. Call list_forms(date_from="${date_from}", date_to="${date_to}", limit=500) — fresh query, do not reuse prior results.
+2. Call get_quality_metrics(date_from="${date_from}", date_to="${date_to}", limit=500) — fresh query.
+3. Build the report strictly from those two responses. Cite field names for every value.
+
+## Report structure
 
 **Summary**
-- Total shipments received
-- Breakdown by inspection status (Accept / Reject / Further Review)
-- Breakdown by origin country
-- Breakdown by client
+- Total shipments received (count of list_forms array)
+- By inspection_status: count each value
+- By origin: count each value
+- By client: count each value
 
-**Shipment Log** (table: PO | Date | Client | Product | Origin | Inspector | Status)
+**Shipment Log**
+Table with columns: PO (po_number) | Date (inspection_date) | Client (client) | Product (product_name) | Origin (origin) | Inspector (inspector_name) | Status (inspection_status)
+List every record returned — do not truncate.
 
 **Quality Highlights**
-- Average brix (by origin if more than one country)
-- Average defect percentage
-- Any shipments with defect_total_percentage > 10%
+- Average brix by origin (from get_quality_metrics, skip nulls)
+- Average defect_total_percentage (from get_quality_metrics)
+- All POs where defect_total_percentage > 0.10, with their exact value
 
 **Rejected & Under Review**
-- List each rejected/further-review PO with defect summary and AI comments
+For each PO where inspection_status is 'Reject' or 'Further Review':
+- po_number, defect_total_percentage, non-zero defect fields with values, ai_generated_comments
 
 **Observations**
-- Flag any recurring defect types, origin patterns, or quality trends`,
+Only include observations directly supported by the data above. Do not infer trends not present in the numbers.`,
         },
       }],
     })
@@ -213,17 +230,23 @@ Steps:
           type: "text",
           text: `Look up all available information for PO number ${po_number}.
 
-Steps:
-1. Call list_forms(po_number="${po_number}", include_full_data=true)
-2. Present the full record including:
-   - Client, product, origin, inspector, date and time
-   - Truck inspection results (temperature, cleanliness, seal, documentation)
-   - Packaging inspection results
-   - Quantity (pallets, cases, variance)
-   - Quality assessment (brix, temperature, pressure, defect breakdown, total defect %, status)
-   - AI-generated comments
-   - QA authorization
-3. Summarize the overall condition of the shipment in plain language`,
+${GROUND_RULES}
+
+## Steps
+1. Call list_forms(po_number="${po_number}", include_full_data=true) — fresh query.
+2. If no result is returned, say "No record found for ${po_number}." and stop.
+3. Present every field from the raw response, organized by section. Cite each field name.
+
+## Sections to cover
+- **Header**: client, product_name, origin, inspector_name, inspection_date, inspection_time, po_number
+- **Truck Inspection**: all fields from truck_inspection with their exact values
+- **Packaging Inspection**: all fields from packaging_inspection with their exact values
+- **Quantity**: num_pallets, cases_per_pallet, total_cases, requested_count, actual_count, variancy
+- **Quality Assessment**: inspection_status, brix, product_temperature_f, pressure, pack_date, cases_inspected, units_inspected, defect_total_percentage, all non-null defect fields with values
+- **AI Comments**: ai_generated_comments verbatim
+- **QA Authorization**: final_verification_pass, name, title, signature
+
+End with a one-paragraph plain-language summary of the shipment condition, based only on the values above.`,
         },
       }],
     })
