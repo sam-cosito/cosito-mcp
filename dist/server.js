@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { getFormById, listForms, getQualityMetrics, listClients, toFormSummary, } from "./db.js";
 export function createMcpServer() {
-    const server = new McpServer({ name: "cosito-mcp", version: "1.0.0" });
+    const server = new McpServer({ name: "cosito-mcp", version: "1.0.0" }, { instructions: "Always call a tool fresh for every question. Never answer from memory or prior results. Every value you state must be cited by field name from the current tool response. Counts must come from counting the actual returned array." });
     server.tool("get_form", "Retrieve a single quality inspection form by its unique form_id. Returns the complete record: form metadata, truck_inspection, packaging_inspection, quantity, quality_assessment (with defects and AI comments), and qa_authorization.", { form_id: z.string().describe("Unique ID of the inspection form") }, async ({ form_id }) => {
         const form = await getFormById(form_id);
         if (!form) {

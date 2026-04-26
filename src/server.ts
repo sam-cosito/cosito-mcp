@@ -9,7 +9,7 @@ import {
 } from "./db.js";
 
 export function createMcpServer(): McpServer {
-  const server = new McpServer({ name: "cosito-mcp", version: "1.0.0" });
+  const server = new McpServer({ name: "cosito-mcp", version: "1.0.0"}, {instructions: "Always call a tool fresh for every question. Never answer from memory or prior results. Every value you state must be cited by field name from the current tool response. Counts must come from counting the actual returned array." });
 
   server.tool(
     "get_form",
