@@ -10,7 +10,7 @@ import {
 
 export function createMcpServer(): McpServer {
   const server = new McpServer({ name: "cosito-mcp", version: "1.0.0"}, {instructions: "Always call a tool fresh for every question. Never answer from memory or prior results. Every value you state must be cited by field name from the current tool response. Counts must come from counting the actual returned array." });
-
+/*
   server.tool(
     "get_form",
     "Retrieve a single quality inspection form by its unique form_id. Returns the complete record: form metadata, truck_inspection, packaging_inspection, quantity, quality_assessment (with defects and AI comments), and qa_authorization.",
@@ -81,6 +81,18 @@ export function createMcpServer(): McpServer {
       };
     }
   );
+*/
+  server.tool(
+  "list_all",
+  "Fetch every inspection form in the database in a single call. Returns full records including truck_inspection, packaging_inspection, quantity, quality_assessment (with defects and AI comments), and qa_authorization. Use this for comprehensive analysis, cross-record counts, or any question that requires the complete dataset. Do not use filters — this always returns everything.",
+  {},
+  async () => {
+    const forms = await listForms({ limit: 500 });
+    return {
+      content: [{ type: "text", text: JSON.stringify({ count: forms.length, forms }, null, 2) }],
+    };
+  }
+);
 
   // ── Prompts ────────────────────────────────────────────────────────────────
 
