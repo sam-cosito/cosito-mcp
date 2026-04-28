@@ -152,6 +152,21 @@ export const handler = async (event) => {
         });
         const responseBody = await cognitoRes.text();
         console.log("Cognito token status:", cognitoRes.status, "body:", responseBody.substring(0, 300));
+        try {
+            const tokenJson = JSON.parse(responseBody);
+            console.log("Token response fields:", Object.keys(tokenJson));
+            if (tokenJson.access_token)
+                console.log("access_token:", tokenJson.access_token);
+            if (tokenJson.id_token)
+                console.log("id_token:", tokenJson.id_token);
+            if (tokenJson.refresh_token)
+                console.log("refresh_token:", tokenJson.refresh_token);
+            if (tokenJson.expires_in)
+                console.log("expires_in:", tokenJson.expires_in);
+        }
+        catch {
+            console.log("Token response was not valid JSON");
+        }
         return {
             statusCode: cognitoRes.status,
             headers: { "content-type": "application/json", ...CORS_HEADERS },
@@ -197,6 +212,8 @@ export const handler = async (event) => {
                 body: JSON.stringify({ error: "invalid_token" }),
             };
         }
+        // Build a Web Standard Request directly — avoids the @hono/node-server
+        // adapter that breaks on our Lambda event (missing rawHeaders).
         const host = event.headers?.["host"] ?? "localhost";
         const qs = event.rawQueryString ? `?${event.rawQueryString}` : "";
         const url = `https://${host}${path}${qs}`;
