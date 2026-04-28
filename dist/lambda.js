@@ -1,15 +1,23 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { createMcpServer } from "./server.js";
 const COGNITO_DOMAIN = process.env.COGNITO_DOMAIN;
 const COGNITO_CLIENT_ID = process.env.COGNITO_CLIENT_ID;
 const COGNITO_CLIENT_SECRET = process.env.COGNITO_CLIENT_SECRET;
 const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const SERVER_URL = process.env.MCP_SERVER_URL;
+const TABLE_NAME = process.env.DYNAMODB_TABLE || "cosito-mcp";
+const REGION = process.env.AWS_REGION || "us-east-1";
 const verifier = CognitoJwtVerifier.create({
     userPoolId: COGNITO_USER_POOL_ID,
     clientId: COGNITO_CLIENT_ID,
     tokenUse: "access",
+});
+const dynamo = new DynamoDBClient({ region: REGION });
+const docClient = DynamoDBDocumentClient.from(dynamo, {
+    marshallOptions: { removeUndefinedValues: true },
 });
 const CORS_HEADERS = {
     "access-control-allow-origin": "*",
@@ -35,6 +43,58 @@ function decodeJwtPayload(token) {
     catch {
         return {};
     }
+}
+async function storeTokens(sub, refreshToken, accessToken, expiresIn) {
+    const expiresAt = Math.floor(Date.now() / 1000) + expiresIn;
+    await docClient.send(new PutCommand({
+        TableName: TABLE_NAME,
+        Item: {
+            form_id: `TOKEN#${sub}`,
+            entity_type: "TOKEN",
+            refresh_token: refreshToken,
+            access_token: accessToken,
+            expires_at: expiresAt,
+        },
+    }));
+    console.log("Stored tokens for sub:", sub, "expires_at:", expiresAt);
+}
+async function getStoredTokens(sub) {
+    const response = await docClient.send(new GetCommand({
+        TableName: TABLE_NAME,
+        Key: { form_id: `TOKEN#${sub}` },
+    }));
+    return response.Item ?? null;
+}
+async function refreshAccessToken(sub) {
+    const stored = await getStoredTokens(sub);
+    if (!stored?.refresh_token) {
+        console.log("Token refresh: no stored refresh token for sub:", sub);
+        return null;
+    }
+    console.log("Token refresh: calling Cognito for sub:", sub);
+    const basicAuth = Buffer.from(`${COGNITO_CLIENT_ID}:${COGNITO_CLIENT_SECRET}`).toString("base64");
+    const body = new URLSearchParams({
+        grant_type: "refresh_token",
+        client_id: COGNITO_CLIENT_ID,
+        refresh_token: stored.refresh_token,
+    });
+    const res = await fetch(`${COGNITO_DOMAIN}/oauth2/token`, {
+        method: "POST",
+        headers: {
+            "content-type": "application/x-www-form-urlencoded",
+            "authorization": `Basic ${basicAuth}`,
+        },
+        body: body.toString(),
+    });
+    if (!res.ok) {
+        console.error("Token refresh failed:", res.status, await res.text());
+        return null;
+    }
+    const tokens = await res.json();
+    const newRefreshToken = (tokens.refresh_token ?? stored.refresh_token);
+    await storeTokens(sub, newRefreshToken, tokens.access_token, tokens.expires_in);
+    console.log("Token refresh: success for sub:", sub);
+    return tokens.access_token;
 }
 export const handler = async (event) => {
     const method = event.requestContext.http.method.toUpperCase();
@@ -124,7 +184,7 @@ export const handler = async (event) => {
         const callbackParams = new URLSearchParams({ code, state: claudeState });
         return redirect(`${claudeRedirectUri}?${callbackParams}`);
     }
-    // Token — proxy to Cognito with client secret + forward code_verifier
+    // Token — proxy to Cognito, store refresh token for auto-renewal
     if (path === "/token" && method === "POST") {
         let rawBody = event.body ?? "";
         if (event.isBase64Encoded)
@@ -151,21 +211,21 @@ export const handler = async (event) => {
             body: cognitoBody.toString(),
         });
         const responseBody = await cognitoRes.text();
-        console.log("Cognito token status:", cognitoRes.status, "body:", responseBody.substring(0, 300));
-        try {
-            const tokenJson = JSON.parse(responseBody);
-            console.log("Token response fields:", Object.keys(tokenJson));
-            if (tokenJson.access_token)
-                console.log("access_token:", tokenJson.access_token);
-            if (tokenJson.id_token)
-                console.log("id_token:", tokenJson.id_token);
-            if (tokenJson.refresh_token)
-                console.log("refresh_token:", tokenJson.refresh_token);
-            if (tokenJson.expires_in)
-                console.log("expires_in:", tokenJson.expires_in);
-        }
-        catch {
-            console.log("Token response was not valid JSON");
+        console.log("Cognito token status:", cognitoRes.status);
+        if (cognitoRes.ok) {
+            try {
+                const tokenJson = JSON.parse(responseBody);
+                if (tokenJson.refresh_token && tokenJson.access_token) {
+                    const idPayload = decodeJwtPayload(tokenJson.id_token ?? "");
+                    const sub = idPayload["sub"];
+                    if (sub) {
+                        await storeTokens(sub, tokenJson.refresh_token, tokenJson.access_token, tokenJson.expires_in);
+                    }
+                }
+            }
+            catch (e) {
+                console.error("Failed to store tokens:", e);
+            }
         }
         return {
             statusCode: cognitoRes.status,
@@ -173,7 +233,7 @@ export const handler = async (event) => {
             body: responseBody,
         };
     }
-    // MCP endpoint — verify JWT then handle with MCP transport
+    // MCP endpoint — verify JWT, auto-refresh if expired, then handle with MCP transport
     if (path === "/mcp" && (method === "POST" || method === "GET" || method === "DELETE")) {
         const authHeader = event.headers?.["authorization"] ?? "";
         const token = authHeader.replace(/^Bearer\s+/i, "");
@@ -196,21 +256,54 @@ export const handler = async (event) => {
             exp: claims["exp"],
             iss: claims["iss"],
         }));
+        let activeToken = token;
         try {
             await verifier.verify(token);
             console.log("MCP: JWT verified ok");
         }
         catch (err) {
-            console.error("JWT verify failed:", err instanceof Error ? err.message : String(err));
-            return {
-                statusCode: 401,
-                headers: {
-                    "www-authenticate": `Bearer error="invalid_token"`,
-                    "content-type": "application/json",
-                    ...CORS_HEADERS,
-                },
-                body: JSON.stringify({ error: "invalid_token" }),
-            };
+            const errMsg = err instanceof Error ? err.message : String(err);
+            console.log("MCP: JWT verify failed:", errMsg);
+            const isExpired = errMsg.toLowerCase().includes("expired") || errMsg.toLowerCase().includes("expir");
+            const sub = claims["sub"];
+            if (isExpired && sub) {
+                console.log("MCP: token expired, attempting silent refresh for sub:", sub);
+                const newToken = await refreshAccessToken(sub);
+                if (newToken) {
+                    try {
+                        await verifier.verify(newToken);
+                        console.log("MCP: silent refresh successful, proceeding with new token");
+                        activeToken = newToken;
+                    }
+                    catch (refreshErr) {
+                        console.error("MCP: refreshed token verification failed:", refreshErr instanceof Error ? refreshErr.message : String(refreshErr));
+                        return {
+                            statusCode: 401,
+                            headers: { "www-authenticate": `Bearer error="invalid_token"`, "content-type": "application/json", ...CORS_HEADERS },
+                            body: JSON.stringify({ error: "invalid_token" }),
+                        };
+                    }
+                }
+                else {
+                    console.log("MCP: refresh token exhausted or missing — user must re-authenticate");
+                    return {
+                        statusCode: 401,
+                        headers: {
+                            "www-authenticate": `Bearer realm="${SERVER_URL}", resource_metadata="${SERVER_URL}/.well-known/oauth-protected-resource"`,
+                            "content-type": "application/json",
+                            ...CORS_HEADERS,
+                        },
+                        body: JSON.stringify({ error: "invalid_token", error_description: "Session expired. Please reconnect." }),
+                    };
+                }
+            }
+            else {
+                return {
+                    statusCode: 401,
+                    headers: { "www-authenticate": `Bearer error="invalid_token"`, "content-type": "application/json", ...CORS_HEADERS },
+                    body: JSON.stringify({ error: "invalid_token" }),
+                };
+            }
         }
         // Build a Web Standard Request directly — avoids the @hono/node-server
         // adapter that breaks on our Lambda event (missing rawHeaders).
@@ -218,6 +311,8 @@ export const handler = async (event) => {
         const qs = event.rawQueryString ? `?${event.rawQueryString}` : "";
         const url = `https://${host}${path}${qs}`;
         const reqHeaders = new Headers(Object.entries(event.headers ?? {}).map(([k, v]) => [k.toLowerCase(), v]));
+        // Replace the expired token in the forwarded headers with the refreshed one
+        reqHeaders.set("authorization", `Bearer ${activeToken}`);
         let bodyInit = null;
         if (method !== "GET" && method !== "DELETE" && event.body) {
             const raw = event.isBase64Encoded
